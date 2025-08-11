@@ -52,6 +52,21 @@
     .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:18px auto 12px; justify-content:center}
     .tab{border:1px solid var(--border); background:var(--panel); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
     .tab.active{outline:2px solid var(--brand)}
+
+    /* >>> Added: readable tab labels + standout active tab */
+    .tabs .tab{ color:#ffffff !important; }                    /* dark mode */
+    @media (prefers-color-scheme: light){
+      .tabs .tab{ color:#0f172a !important; }                  /* light mode */
+    }
+    .tabs .tab:disabled{ color:rgba(255,255,255,.6) !important; }
+    .tabs .tab.active{
+      background:var(--brand) !important;                      /* bright pill */
+      color:#ffffff !important;                                /* white text */
+      box-shadow:0 0 10px rgba(59,130,246,.7);                 /* soft glow */
+      outline:none;                                            /* remove default ring */
+    }
+    /* <<< end added */
+
     .panel{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 10px 30px #00000014}
     .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
     @media (max-width:820px){ .grid{grid-template-columns:1fr} }
@@ -66,7 +81,6 @@
     ul.files{list-style:none; margin:12px 0 0; padding:0; max-height:260px; overflow:auto}
     ul.files li{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border:1px dashed var(--border); border-radius:10px; margin-bottom:8px; font-size:14px; background:#0f172a22}
     .pill{font-size:12px; color:#cbd5e1; padding:2px 8px; border-radius:999px; background:#0f172a; border:1px solid var(--border)}
-    /* Drag sort */
     ul.files li[draggable="true"]{cursor:grab}
     ul.files li.dragging{opacity:.5}
     ul.files li.drop-hint{outline:2px dashed var(--brand)}
@@ -83,7 +97,6 @@
     .spinner { width:18px; height:18px; border:3px solid #ffffff66; border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; vertical-align:-3px; margin-right:8px }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Cookie banner */
     .cookie{
       position:fixed; left:16px; right:16px; bottom:16px; z-index:60; background:var(--panel);
       border:1px solid var(--border); border-radius:12px; padding:14px; display:none;
@@ -92,7 +105,6 @@
     .cookie.show{display:block}
     .cookie .row{display:flex; gap:8px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap}
 
-    /* Progress bars */
     .progress{height:10px; width:100%; background:#0f172a44; border-radius:999px; overflow:hidden; border:1px solid var(--border); margin-top:10px}
     .progress > div{height:100%; width:0; background:linear-gradient(90deg, var(--brand), var(--brand-2)); transition:width .2s ease}
     .progress-wrap{margin-top:8px}
@@ -101,7 +113,6 @@
   </style>
 </head>
 <body>
-
   <!-- Sticky CTA Bar -->
   <div class="sticky">
     <div class="wrap">
@@ -303,7 +314,6 @@
             <span class="pill">${formatSize(f.size)}</span>
           </div>`;
         ul.appendChild(li);
-        // Render thumbnail (first page)
         try{
           const buf = await f.arrayBuffer();
           const pdf = await pdfjsLib.getDocument(new Uint8Array(buf)).promise;
@@ -312,7 +322,7 @@
           const canvas = li.querySelector('canvas');
           canvas.width = vp.width; canvas.height = vp.height;
           await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
-        }catch(err){ /* ignore if not renderable */ }
+        }catch(err){ /* ignore non-renderable */ }
       }
     };
 
@@ -323,11 +333,10 @@
       input.addEventListener('change', ()=> onFiles(input.files));
     };
 
-    // ===== MERGE (drag-sort + arrows + pipeline compress) =====
+    // Merge
     const mergeDrop=$('#mergeDrop'), mergePick=$('#mergePick'), mergeInput=$('#mergeFiles'), mergeList=$('#mergeList');
     let mergeFilesArr = [];
     const renderMergeList = async ()=>{ await listWithThumbs(mergeList, mergeFilesArr);
-      // make draggable & add arrow actions
       [...mergeList.children].forEach((li, idx)=>{
         li.draggable = true; li.dataset.index = idx;
         li.addEventListener('dragstart', ()=> li.classList.add('dragging'));
@@ -348,7 +357,6 @@
     mergePick.onclick=()=>mergeInput.click();
     hookDrop(mergeDrop, mergeInput, files=>{ mergeFilesArr = [...files]; renderMergeList(); });
 
-    // Paste-from-clipboard files (bonus UX)
     document.addEventListener('paste', e=>{
       if(!e.clipboardData?.files?.length) return;
       const files = [...e.clipboardData.files].filter(f=>/pdf$/i.test(f.name) || f.type==='application/pdf');
@@ -369,9 +377,7 @@
           setProgress(prog, Math.min(95, Math.round(((i+1)/mergeFilesArr.length)*90)+5));
         }
         let bytes=await merged.save(); setProgress(prog, 98);
-
         if($('#mergeCompressChk').checked){
-          // quick structural re-save as "compress"
           const temp = await PDFLib.PDFDocument.load(bytes);
           bytes = await temp.save({useObjectStreams:true});
         }
@@ -383,7 +389,7 @@
       finally{ setBusy(btn,false); }
     };
 
-    // ===== SPLIT =====
+    // Split
     const splitDrop=$('#splitDrop'), splitPick=$('#splitPick'), splitInput=$('#splitFile'), splitList=$('#splitList');
     const listFiles = (ul, files)=>{ ul.innerHTML=''; [...files].forEach(f=>{ const li=document.createElement('li'); li.innerHTML=`<div class="thumb"><canvas></canvas><span>${f.name}</span></div><span class="pill">${formatSize(f.size)}</span>`; ul.appendChild(li); renderThumbTo(li.querySelector('canvas'), f).catch(()=>{}); }); };
     async function renderThumbTo(canvas, file){
@@ -413,8 +419,8 @@
       finally{ setBusy(btn,false); }
     };
 
-    // ===== COMPRESS =====
-    const compressDrop=$('#compressDrop'), compressPick=$('#compressPick'), compressInput=$('#compressFile'), compressList=$('#compressList');
+    // Compress
+    const compressDrop=$('#compressDrop'), compressPick=$('#compressPick'), compressInput=$('#compressFile'), compressList=$('#compressList']);
     compressPick.onclick=()=>compressInput.click();
     hookDrop(compressDrop, compressInput, files=>{ compressInput.files = files; listFiles(compressList, files); });
     $('#compressClear').onclick=()=>{ compressInput.value=''; compressList.innerHTML=''; };
@@ -430,7 +436,7 @@
       finally{ setBusy(btn,false); }
     };
 
-    // ===== PDF -> Images (format + quality + ZIP) =====
+    // PDF -> Images
     const imgDrop=$('#imgDrop'), imgPick=$('#imgPick'), imgInput=$('#pdfToImgFile'), imgList=$('#imgList');
     const fmtSel = $('#imgFormat'); const jpgQ = $('#jpgQuality'); const jpgQLabel = $('#jpgQLabel'); const jpgQWrap = $('#jpgQWrap');
     fmtSel.addEventListener('change', ()=>{
@@ -487,10 +493,10 @@
       finally{ setBusy(btn,false); }
     };
 
-    // ===== Consent & AdSense (consent-gated) =====
+    // Consent & AdSense
     const AD_CLIENT = 'YOUR-ADSENSE-CLIENT-ID'; // e.g., ca-pub-XXXXXXXXXXXX
     function loadAds(){
-      if(!AD_CLIENT || AD_CLIENT.includes('YOUR-')) return; // safety
+      if(!AD_CLIENT || AD_CLIENT.includes('YOUR-')) return;
       const s=document.createElement('script');
       s.async=true; s.src=`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`;
       s.crossOrigin='anonymous'; document.head.appendChild(s);
@@ -503,7 +509,7 @@
     const banner = $('#cookie');
     if(!consent){ banner.classList.add('show'); } else if(consent==='accepted'){ loadAds(); }
     $('#cookie-accept').onclick=()=>{ localStorage.setItem('cookieConsent','accepted'); banner.classList.remove('show'); loadAds(); };
-    $('#cookie-decline').onclick=()=>{ localStorage.setItem('cookieConsent','declined'); banner.classList.remove('show'); /* no ads */ };
+    $('#cookie-decline').onclick=()=>{ localStorage.setItem('cookieConsent','declined'); banner.classList.remove('show'); };
   </script>
 </body>
 </html>
