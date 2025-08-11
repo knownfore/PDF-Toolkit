@@ -2,137 +2,366 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDF to Anything Toolkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Free PDF Merge, Split & Convert</title>
+  <meta name="description" content="Free online PDF tools: merge, split, compress, and convert PDFs to images. No signup."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f4f4f4; }
-    h1 { margin-bottom: 20px; }
-    .tool { background: white; padding: 20px; margin: 20px auto; border-radius: 8px; max-width: 500px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    input[type=file], input[type=text] { margin: 10px 0; padding: 10px; width: 90%; }
-    button { padding: 10px 15px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
-    button:hover { background: #0056b3; }
+    :root{
+      --bg:#0b0f14; --panel:#111825; --ink:#eaf2ff; --muted:#9bb3d1;
+      --brand:#3b82f6; --brand-2:#22d3ee; --border:#1e293b; --ok:#22c55e; --warn:#f59e0b;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#4b5563; --border:#e5e7eb; --brand:#2563eb; }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color:var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #0ea5e92a, transparent 60%),
+                  radial-gradient(1000px 500px at 100% 0%, #6366f12a, transparent 60%),
+                  var(--bg);
+    }
+    .container{max-width:980px; margin:28px auto; padding:16px}
+    header{
+      display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:18px;
+    }
+    .logo{
+      width:40px; height:40px; border-radius:10px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      display:grid; place-items:center; color:white; font-weight:800;
+      box-shadow:0 8px 30px #00000033;
+    }
+    h1{margin:0; font-size:clamp(22px,3.6vw,34px); letter-spacing:.2px}
+    .sub{color:var(--muted); text-align:center; margin-top:6px}
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap; margin:22px auto 14px; justify-content:center;
+    }
+    .tab{
+      border:1px solid var(--border); background:var(--panel);
+      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
+      transition:.18s transform ease, .18s background ease;
+    }
+    .tab.active{ outline:2px solid var(--brand); transform:translateY(-1px)}
+    .panel{
+      background:var(--panel); border:1px solid var(--border); border-radius:18px;
+      padding:18px; box-shadow:0 10px 30px #00000014;
+    }
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+    @media (max-width:820px){ .grid{grid-template-columns:1fr} }
+
+    .drop{
+      border:2px dashed var(--border); border-radius:14px; padding:22px;
+      display:grid; place-items:center; text-align:center; min-height:160px;
+      background:linear-gradient(180deg, transparent, #0000) ;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    .drop.drag{ border-color:var(--brand); background:linear-gradient(180deg, #3b82f60e, #0000)}
+    .drop input{display:none}
+    .drop .cta{margin-top:10px}
+    .btn{
+      background:var(--brand); color:white; border:0; padding:10px 14px; border-radius:10px;
+      cursor:pointer; font-weight:700; transition:.18s transform ease, .18s box-shadow ease;
+      box-shadow:0 8px 20px #3b82f650;
+    }
+    .btn.secondary{ background:#111827; color:#e5e7eb; border:1px solid var(--border); box-shadow:none}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center}
+    .field{width:100%}
+    input[type="text"]{
+      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px;
+      background:transparent; color:var(--ink);
+    }
+    ul.files{list-style:none; margin:12px 0 0; padding:0; max-height:180px; overflow:auto}
+    ul.files li{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:8px 10px; border:1px dashed var(--border); border-radius:10px; margin-bottom:8px;
+      font-size:14px;
+    }
+    .pill{font-size:12px; color:#cbd5e1; padding:2px 8px; border-radius:999px; background:#0f172a; border:1px solid var(--border)}
+    .hint{color:var(--muted); font-size:13px; margin-top:8px; text-align:center}
+    .actions{display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap}
+    .toast{
+      position:fixed; inset:auto 16px 16px auto; background:var(--panel); color:var(--ink);
+      border:1px solid var(--border); padding:10px 12px; border-radius:10px; opacity:0; transform:translateY(10px);
+      transition:.2s ease; pointer-events:none;
+    }
+    .toast.show{opacity:1; transform:translateY(0)}
+    .spinner {
+      width:18px; height:18px; border:3px solid #ffffff66; border-top-color:white; border-radius:50%;
+      animation:spin 0.8s linear infinite; display:inline-block; vertical-align:-3px; margin-right:8px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    footer{color:var(--muted); text-align:center; margin:18px 0}
+    .tiny{font-size:12px}
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <div class="logo">PDF</div>
+      <h1>Free PDF Merge, Split & Convert</h1>
+    </header>
+    <p class="sub">Fast, private, in-browser tools to merge, split, compress, and convert PDFs. No signup.</p>
 
-<h1>PDF to Anything Toolkit</h1>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="merge">Merge</button>
+      <button class="tab" data-tab="split">Split</button>
+      <button class="tab" data-tab="compress">Compress</button>
+      <button class="tab" data-tab="images">PDF → Images</button>
+    </nav>
 
-<div class="tool">
-  <h2>Merge PDFs</h2>
-  <input type="file" id="mergeFiles" multiple accept="application/pdf">
-  <br>
-  <button onclick="mergePDFs()">Merge and Download</button>
-</div>
+    <!-- MERGE -->
+    <section class="panel" data-panel="merge">
+      <div class="grid">
+        <div>
+          <label class="drop" id="mergeDrop">
+            <input type="file" id="mergeFiles" multiple accept="application/pdf">
+            <div>
+              <strong>Drop PDFs here</strong><br/>
+              or <button type="button" class="btn secondary" id="mergePick">Choose Files</button>
+              <div class="cta hint">Add 2 or more PDFs to combine</div>
+            </div>
+          </label>
+        </div>
+        <div>
+          <ul class="files" id="mergeList"></ul>
+          <div class="actions">
+            <button class="btn" id="mergeBtn">Merge & Download</button>
+            <button class="btn secondary" id="mergeClear">Clear</button>
+          </div>
+          <p class="hint tiny">Tip: Reorder by re-selecting in the sequence you want (drag-drop sorting coming next).</p>
+        </div>
+      </div>
+    </section>
 
-<div class="tool">
-  <h2>Split PDF</h2>
-  <input type="file" id="splitFile" accept="application/pdf">
-  <input type="text" id="pageRange" placeholder="Enter pages (e.g. 1-3)">
-  <br>
-  <button onclick="splitPDF()">Split and Download</button>
-</div>
+    <!-- SPLIT -->
+    <section class="panel" data-panel="split" hidden>
+      <div class="grid">
+        <div>
+          <label class="drop" id="splitDrop">
+            <input type="file" id="splitFile" accept="application/pdf">
+            <div>
+              <strong>Drop a PDF here</strong><br/>
+              or <button type="button" class="btn secondary" id="splitPick">Choose File</button>
+              <div class="cta hint">Example ranges: 1-3, 5-5, 7-10</div>
+            </div>
+          </label>
+        </div>
+        <div>
+          <ul class="files" id="splitList"></ul>
+          <div class="field">
+            <input type="text" id="pageRange" placeholder="Enter page range (e.g., 1-3)" />
+          </div>
+          <div class="actions">
+            <button class="btn" id="splitBtn">Split & Download</button>
+            <button class="btn secondary" id="splitClear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<div class="tool">
-  <h2>Compress PDF</h2>
-  <input type="file" id="compressFile" accept="application/pdf">
-  <br>
-  <button onclick="compressPDF()">Compress and Download</button>
-</div>
+    <!-- COMPRESS -->
+    <section class="panel" data-panel="compress" hidden>
+      <div class="grid">
+        <div>
+          <label class="drop" id="compressDrop">
+            <input type="file" id="compressFile" accept="application/pdf">
+            <div>
+              <strong>Drop a PDF here</strong><br/>
+              or <button type="button" class="btn secondary" id="compressPick">Choose File</button>
+              <div class="cta hint">Light, lossless compression (image recompress coming soon)</div>
+            </div>
+          </label>
+        </div>
+        <div>
+          <ul class="files" id="compressList"></ul>
+          <div class="actions">
+            <button class="btn" id="compressBtn">Compress & Download</button>
+            <button class="btn secondary" id="compressClear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<div class="tool">
-  <h2>Convert PDF to Images (JPG)</h2>
-  <input type="file" id="pdfToImgFile" accept="application/pdf">
-  <br>
-  <button onclick="pdfToImages()">Convert & Download</button>
-</div>
+    <!-- PDF TO IMAGES -->
+    <section class="panel" data-panel="images" hidden>
+      <div class="grid">
+        <div>
+          <label class="drop" id="imgDrop">
+            <input type="file" id="pdfToImgFile" accept="application/pdf">
+            <div>
+              <strong>Drop a PDF here</strong><br/>
+              or <button type="button" class="btn secondary" id="imgPick">Choose File</button>
+              <div class="cta hint">Each page will download as a JPG image</div>
+            </div>
+          </label>
+        </div>
+        <div>
+          <ul class="files" id="imgList"></ul>
+          <div class="actions">
+            <button class="btn" id="imgBtn">Convert & Download</button>
+            <button class="btn secondary" id="imgClear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<script>
-function download(bytes, filename) {
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  URL.revokeObjectURL(url);
-  a.remove();
-}
+    <footer>Made with ❤️ — files stay in your browser.</footer>
+  </div>
 
-async function mergePDFs() {
-  const files = document.getElementById('mergeFiles').files;
-  if (files.length < 2) return alert('Select at least 2 PDFs to merge');
-  const mergedPdf = await PDFLib.PDFDocument.create();
-  for (let file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
-  }
-  const mergedBytes = await mergedPdf.save();
-  download(mergedBytes, 'merged.pdf');
-}
+  <div class="toast" id="toast"></div>
 
-async function splitPDF() {
-  const file = document.getElementById('splitFile').files[0];
-  const range = document.getElementById('pageRange').value;
-  if (!file || !range) return alert('Select a PDF and enter a page range');
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-  const newPdf = await PDFLib.PDFDocument.create();
-  let [start, end] = range.split('-').map(n => parseInt(n) - 1);
-  if (isNaN(start) || isNaN(end)) return alert('Invalid page range format');
-  const copiedPages = await newPdf.copyPages(pdf, Array.from({length: end - start + 1}, (_, i) => start + i));
-  copiedPages.forEach((page) => newPdf.addPage(page));
-  const splitBytes = await newPdf.save();
-  download(splitBytes, 'split.pdf');
-}
+  <script>
+    // ---------- helpers ----------
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const toast = (msg) => {
+      const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+      setTimeout(()=> el.classList.remove('show'), 2200);
+    };
+    const formatSize = b => (b/1024/1024).toFixed(2)+' MB';
+    const setBusy = (btn, busy=true, label) => {
+      if(busy){ btn.disabled = true; btn.dataset._label = btn.textContent; btn.innerHTML = `<span class="spinner"></span>${label||'Working...'}`; }
+      else { btn.disabled = false; btn.textContent = btn.dataset._label || 'Done'; }
+    };
+    const listFiles = (ul, files) => {
+      ul.innerHTML = '';
+      [...files].forEach(f=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${f.name}</span><span class="pill">${formatSize(f.size)}</span>`;
+        ul.appendChild(li);
+      });
+    };
+    const hookDrop = (wrap, input, list) => {
+      wrap.addEventListener('dragover', e=>{ e.preventDefault(); wrap.classList.add('drag'); });
+      ['dragleave','drop'].forEach(ev => wrap.addEventListener(ev, _=>wrap.classList.remove('drag')));
+      wrap.addEventListener('drop', e=>{
+        e.preventDefault();
+        input.files = e.dataTransfer.files;
+        listFiles(list, input.files);
+      });
+    };
 
-async function compressPDF() {
-  const file = document.getElementById('compressFile').files[0];
-  if (!file) return alert('Select a PDF to compress');
-  // For MVP: Just re-save the PDF (light compression)
-  // Full compression would require image re-encoding libraries (more CPU-heavy)
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-  const compressedBytes = await pdf.save({ useObjectStreams: true });
-  download(compressedBytes, 'compressed.pdf');
-}
+    // ---------- tabs ----------
+    const tabs = $('#tabs');
+    tabs.addEventListener('click', (e)=>{
+      if(!e.target.classList.contains('tab')) return;
+      $$('.tab').forEach(t=>t.classList.remove('active'));
+      e.target.classList.add('active');
+      const id = e.target.dataset.tab;
+      $$('section.panel').forEach(p=>p.hidden = p.dataset.panel !== id);
+    });
 
-async function pdfToImages() {
-  const file = document.getElementById('pdfToImgFile').files[0];
-  if (!file) return alert('Select a PDF');
-  const fileReader = new FileReader();
-  fileReader.onload = async function() {
-    const typedarray = new Uint8Array(this.result);
-    const loadingTask = pdfjsLib.getDocument(typedarray);
-    const pdf = await loadingTask.promise;
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 2.0 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
-      canvas.toBlob(function(blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `page-${i}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
-      }, 'image/jpeg');
-    }
-  };
-  fileReader.readAsArrayBuffer(file);
-}
-</script>
+    // ---------- MERGE ----------
+    const mergeDrop = $('#mergeDrop'), mergePick = $('#mergePick'), mergeInput = $('#mergeFiles'), mergeList = $('#mergeList');
+    hookDrop(mergeDrop, mergeInput, mergeList);
+    mergePick.onclick = ()=> mergeInput.click();
+    mergeInput.onchange = ()=> listFiles(mergeList, mergeInput.files);
+    $('#mergeClear').onclick = ()=>{ mergeInput.value=''; mergeList.innerHTML=''; };
+    $('#mergeBtn').onclick = async ()=>{
+      const files = mergeInput.files;
+      if(files.length < 2) return toast('Add at least two PDFs.');
+      const btn = $('#mergeBtn'); setBusy(btn,true,'Merging…');
+      try{
+        const merged = await PDFLib.PDFDocument.create();
+        for (const file of files){
+          const buf = await file.arrayBuffer();
+          const src = await PDFLib.PDFDocument.load(buf);
+          const pages = await merged.copyPages(src, src.getPageIndices());
+          pages.forEach(p=>merged.addPage(p));
+        }
+        const bytes = await merged.save();
+        const blob = new Blob([bytes], {type:'application/pdf'});
+        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: 'merged.pdf'});
+        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        toast('Merged PDF downloaded.');
+      }catch(err){ console.error(err); toast('Merge failed.'); }
+      finally{ setBusy(btn,false); }
+    };
 
+    // ---------- SPLIT ----------
+    const splitDrop = $('#splitDrop'), splitPick = $('#splitPick'), splitInput = $('#splitFile'), splitList = $('#splitList');
+    hookDrop(splitDrop, splitInput, splitList);
+    splitPick.onclick = ()=> splitInput.click();
+    splitInput.onchange = ()=> listFiles(splitList, splitInput.files);
+    $('#splitClear').onclick = ()=>{ splitInput.value=''; splitList.innerHTML=''; $('#pageRange').value=''; };
+    $('#splitBtn').onclick = async ()=>{
+      const file = splitInput.files[0]; const range = $('#pageRange').value.trim();
+      if(!file) return toast('Choose a PDF.');
+      if(!/^\d+\s*-\s*\d+$/.test(range)) return toast('Enter a valid range like 1-3.');
+      const btn = $('#splitBtn'); setBusy(btn,true,'Splitting…');
+      try{
+        const [s,e] = range.split('-').map(n=>parseInt(n.trim(),10)-1);
+        const buf = await file.arrayBuffer();
+        const src = await PDFLib.PDFDocument.load(buf);
+        if(s<0 || e>=src.getPageCount() || s>e) throw new Error('range');
+        const out = await PDFLib.PDFDocument.create();
+        const pages = await out.copyPages(src, Array.from({length: e-s+1}, (_,i)=> s+i));
+        pages.forEach(p=>out.addPage(p));
+        const bytes = await out.save();
+        const blob = new Blob([bytes], {type:'application/pdf'});
+        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `split-${s+1}-${e+1}.pdf`});
+        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        toast('Split PDF downloaded.');
+      }catch(err){ console.error(err); toast('Split failed.'); }
+      finally{ setBusy(btn,false); }
+    };
+
+    // ---------- COMPRESS (lossless-ish re-save) ----------
+    const compressDrop = $('#compressDrop'), compressPick = $('#compressPick'), compressInput = $('#compressFile'), compressList = $('#compressList');
+    hookDrop(compressDrop, compressInput, compressList);
+    compressPick.onclick = ()=> compressInput.click();
+    compressInput.onchange = ()=> listFiles(compressList, compressInput.files);
+    $('#compressClear').onclick = ()=>{ compressInput.value=''; compressList.innerHTML=''; };
+    $('#compressBtn').onclick = async ()=>{
+      const file = compressInput.files[0]; if(!file) return toast('Choose a PDF.');
+      const btn = $('#compressBtn'); setBusy(btn,true,'Compressing…');
+      try{
+        const buf = await file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(buf);
+        const bytes = await pdf.save({ useObjectStreams:true }); // light structural compression
+        const blob = new Blob([bytes], {type:'application/pdf'});
+        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `compressed-${file.name}`});
+        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        toast('Compressed PDF downloaded.');
+      }catch(err){ console.error(err); toast('Compression failed.'); }
+      finally{ setBusy(btn,false); }
+    };
+
+    // ---------- PDF → IMAGES ----------
+    const imgDrop = $('#imgDrop'), imgPick = $('#imgPick'), imgInput = $('#pdfToImgFile'), imgList = $('#imgList');
+    hookDrop(imgDrop, imgInput, imgList);
+    imgPick.onclick = ()=> imgInput.click();
+    imgInput.onchange = ()=> listFiles(imgList, imgInput.files);
+    $('#imgClear').onclick = ()=>{ imgInput.value=''; imgList.innerHTML=''; };
+    $('#imgBtn').onclick = async ()=>{
+      const file = imgInput.files[0]; if(!file) return toast('Choose a PDF.');
+      const btn = $('#imgBtn'); setBusy(btn,true,'Converting…');
+      try{
+        const buf = await file.arrayBuffer();
+        const typed = new Uint8Array(buf);
+        const loadingTask = pdfjsLib.getDocument(typed);
+        const pdf = await loadingTask.promise;
+        for(let i=1;i<=pdf.numPages;i++){
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({scale:2});
+          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+          canvas.width = viewport.width; canvas.height = viewport.height;
+          await page.render({canvasContext:ctx, viewport}).promise;
+          await new Promise(res=>canvas.toBlob(b=>{
+            const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(b), download:`page-${i}.jpg`});
+            document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove(); res();
+          }, 'image/jpeg', 0.92));
+        }
+        toast('Images downloaded.');
+      }catch(err){ console.error(err); toast('Conversion failed.'); }
+      finally{ setBusy(btn,false); }
+    };
+  </script>
 </body>
 </html>
-
