@@ -35,6 +35,13 @@
       --bg:#0b0f14; --panel:#111825; --ink:#eaf2ff; --muted:#9bb3d1;
       --brand:#3b82f6; --brand-2:#22d3ee; --border:#1e293b; --ok:#22c55e; --warn:#f59e0b;
     }
+    /* === Click Fix: prevent header overlay from blocking clicks === */
+.sticky { pointer-events: none; }
+.sticky * { pointer-events: auto; }
+
+.cookie { pointer-events: auto; }
+.adwrap.hidden { display: none !important; }
+
     @media (prefers-color-scheme: light){
       :root{ --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#4b5563; --border:#e5e7eb; --brand:#2563eb; }
     }
