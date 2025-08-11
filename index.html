@@ -35,13 +35,6 @@
       --bg:#0b0f14; --panel:#111825; --ink:#eaf2ff; --muted:#9bb3d1;
       --brand:#3b82f6; --brand-2:#22d3ee; --border:#1e293b; --ok:#22c55e; --warn:#f59e0b;
     }
-    /* === Click Fix: prevent header overlay from blocking clicks === */
-.sticky { pointer-events: none; }
-.sticky * { pointer-events: auto; }
-
-.cookie { pointer-events: auto; }
-.adwrap.hidden { display: none !important; }
-
     @media (prefers-color-scheme: light){
       :root{ --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#4b5563; --border:#e5e7eb; --brand:#2563eb; }
     }
@@ -136,6 +129,22 @@
     .seo h2, .seo h3 { color:var(--ink); margin:.4rem 0 .2rem; font-size: clamp(18px, 2.5vw, 20px); }
     .faq details { background:#0f172a1a; border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin:8px 0; }
     .faq summary { cursor:pointer; font-weight:600; }
+
+    /* === CLICK FIX (safe overrides) === */
+    /* Keep the header only as tall as its content and not stretching */
+    .sticky { z-index: 20; }
+    .sticky .wrap { justify-content: space-between; }
+    .brand { margin-right: 0; } /* replaces margin-right:auto trick */
+
+    /* Ensure main interactive content always wins vs stray overlays */
+    .container, header, nav.tabs, section.panel, footer { position: relative; z-index: 10; }
+
+    /* Cookie banner shouldn’t blanket the whole screen */
+    .cookie { max-width: 960px; margin: 0 auto; pointer-events: auto; }
+
+    /* Ads (even if injected) must never block clicks */
+    .adwrap, .adsbygoogle { pointer-events: none; }
+    .adwrap.hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -345,6 +354,19 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <!-- Overlay guard (neutralizes rogue full-screen overlays that eat clicks) -->
+  <script>
+  window.addEventListener('load', () => {
+    const el = document.elementFromPoint(innerWidth/2, innerHeight/2);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    const isFull = cs.position === 'fixed' && r.width >= innerWidth - 2 && r.height >= innerHeight - 2;
+    const whitelisted = el.closest('.sticky') || el.closest('.cookie');
+    if (isFull && !whitelisted) el.style.pointerEvents = 'none';
+  });
+  </script>
+
   <!-- App logic (kept last so defers can load first) -->
   <script>
     // ===== Helpers =====
@@ -467,7 +489,7 @@
     };
 
     // Split
-    const splitDrop=$('#splitDrop'), splitPick=$('#splitPick'), splitInput=$('#splitFile'), splitList=$('#splitList');
+    const splitDrop=$('#splitDrop'), splitPick=$('#splitPick'), splitInput=$('#splitFile'), splitList=$('#splitList']);
     const listFiles = (ul, files)=>{ ul.innerHTML=''; [...files].forEach(f=>{ const li=document.createElement('li'); li.innerHTML=`<div class="thumb"><canvas aria-hidden="true"></canvas><span>${f.name}</span></div><span class="pill">${formatSize(f.size)}</span>`; ul.appendChild(li); renderThumbTo(li.querySelector('canvas'), f).catch(()=>{}); }); };
     async function renderThumbTo(canvas, file){
       const buf = await file.arrayBuffer();
@@ -620,4 +642,5 @@
   </script>
 </body>
 </html>
+
 
