@@ -9,10 +9,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+
+  <!-- Google AdSense (replace client id) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR-ADSENSE-CLIENT-ID" crossorigin="anonymous"></script>
+
   <style>
     :root{
       --bg:#0b0f14; --panel:#111825; --ink:#eaf2ff; --muted:#9bb3d1;
-      --brand:#3b82f6; --brand-2:#22d3ee; --border:#1e293b; --ok:#22c55e; --warn:#f59e0b;
+      --brand:#3b82f6; --brand-2:#22d3ee; --border:#1e293b;
     }
     @media (prefers-color-scheme: light){
       :root{ --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#4b5563; --border:#e5e7eb; --brand:#2563eb; }
@@ -24,89 +28,93 @@
       background: radial-gradient(1200px 600px at 10% -10%, #0ea5e92a, transparent 60%),
                   radial-gradient(1000px 500px at 100% 0%, #6366f12a, transparent 60%),
                   var(--bg);
+      padding-top:72px; /* space for sticky bar */
     }
-    .container{max-width:980px; margin:28px auto; padding:16px}
-    header{
-      display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:18px;
+    .sticky{
+      position:fixed; top:0; left:0; right:0; z-index:50;
+      background:rgba(17,24,37,.9); backdrop-filter: blur(8px);
+      border-bottom:1px solid var(--border);
     }
-    .logo{
-      width:40px; height:40px; border-radius:10px;
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      display:grid; place-items:center; color:white; font-weight:800;
-      box-shadow:0 8px 30px #00000033;
+    .sticky .wrap{
+      max-width:980px; margin:0 auto; padding:10px 12px; display:flex; gap:8px; align-items:center;
     }
-    h1{margin:0; font-size:clamp(22px,3.6vw,34px); letter-spacing:.2px}
-    .sub{color:var(--muted); text-align:center; margin-top:6px}
+    .brand{display:flex; align-items:center; gap:10px; margin-right:auto}
+    .logo{width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#fff; display:grid; place-items:center; font-weight:800; font-size:12px}
+    .brand span{font-weight:700}
+    .cta{display:flex; gap:8px; flex-wrap:wrap}
+    .sbtn{background:var(--brand); color:#fff; border:0; padding:8px 10px; border-radius:10px; font-weight:700; cursor:pointer}
+    .sbtn.alt{background:#111827; color:#e5e7eb; border:1px solid var(--border)}
 
-    .tabs{
-      display:flex; gap:8px; flex-wrap:wrap; margin:22px auto 14px; justify-content:center;
-    }
-    .tab{
-      border:1px solid var(--border); background:var(--panel);
-      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
-      transition:.18s transform ease, .18s background ease;
-    }
-    .tab.active{ outline:2px solid var(--brand); transform:translateY(-1px)}
-    .panel{
-      background:var(--panel); border:1px solid var(--border); border-radius:18px;
-      padding:18px; box-shadow:0 10px 30px #00000014;
-    }
+    .container{max-width:980px; margin:28px auto; padding:16px}
+    header{display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:10px}
+    .logo-lg{width:40px; height:40px; border-radius:10px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); display:grid; place-items:center; color:white; font-weight:800; box-shadow:0 8px 30px #00000033}
+    h1{margin:0; font-size:clamp(22px,3.6vw,34px)}
+    .sub{color:var(--muted); text-align:center; margin:6px 0 12px}
+
+    .adwrap{display:flex; justify-content:center; margin:12px 0}
+    .adsbygoogle{display:block}
+
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:18px auto 12px; justify-content:center}
+    .tab{border:1px solid var(--border); background:var(--panel); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
+    .tab.active{outline:2px solid var(--brand)}
+    .panel{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 10px 30px #00000014}
     .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
     @media (max-width:820px){ .grid{grid-template-columns:1fr} }
 
-    .drop{
-      border:2px dashed var(--border); border-radius:14px; padding:22px;
-      display:grid; place-items:center; text-align:center; min-height:160px;
-      background:linear-gradient(180deg, transparent, #0000) ;
-      transition: border-color .2s ease, background .2s ease;
-    }
-    .drop.drag{ border-color:var(--brand); background:linear-gradient(180deg, #3b82f60e, #0000)}
+    .drop{border:2px dashed var(--border); border-radius:14px; padding:22px; display:grid; place-items:center; text-align:center; min-height:160px}
+    .drop.drag{border-color:var(--brand); background:linear-gradient(180deg, #3b82f60e, #0000)}
     .drop input{display:none}
-    .drop .cta{margin-top:10px}
-    .btn{
-      background:var(--brand); color:white; border:0; padding:10px 14px; border-radius:10px;
-      cursor:pointer; font-weight:700; transition:.18s transform ease, .18s box-shadow ease;
-      box-shadow:0 8px 20px #3b82f650;
-    }
-    .btn.secondary{ background:#111827; color:#e5e7eb; border:1px solid var(--border); box-shadow:none}
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center}
-    .field{width:100%}
-    input[type="text"]{
-      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px;
-      background:transparent; color:var(--ink);
-    }
-    ul.files{list-style:none; margin:12px 0 0; padding:0; max-height:180px; overflow:auto}
-    ul.files li{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding:8px 10px; border:1px dashed var(--border); border-radius:10px; margin-bottom:8px;
-      font-size:14px;
-    }
-    .pill{font-size:12px; color:#cbd5e1; padding:2px 8px; border-radius:999px; background:#0f172a; border:1px solid var(--border)}
-    .hint{color:var(--muted); font-size:13px; margin-top:8px; text-align:center}
+    .btn{background:var(--brand); color:white; border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700}
+    .btn.secondary{ background:#111827; color:#e5e7eb; border:1px solid var(--border)}
     .actions{display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap}
-    .toast{
-      position:fixed; inset:auto 16px 16px auto; background:var(--panel); color:var(--ink);
-      border:1px solid var(--border); padding:10px 12px; border-radius:10px; opacity:0; transform:translateY(10px);
-      transition:.2s ease; pointer-events:none;
-    }
-    .toast.show{opacity:1; transform:translateY(0)}
-    .spinner {
-      width:18px; height:18px; border:3px solid #ffffff66; border-top-color:white; border-radius:50%;
-      animation:spin 0.8s linear infinite; display:inline-block; vertical-align:-3px; margin-right:8px;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
+    .hint{color:var(--muted); font-size:13px; text-align:center}
+    ul.files{list-style:none; margin:12px 0 0; padding:0; max-height:180px; overflow:auto}
+    ul.files li{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border:1px dashed var(--border); border-radius:10px; margin-bottom:8px; font-size:14px}
+    .pill{font-size:12px; color:#cbd5e1; padding:2px 8px; border-radius:999px; background:#0f172a; border:1px solid var(--border)}
+
     footer{color:var(--muted); text-align:center; margin:18px 0}
     .tiny{font-size:12px}
+
+    .toast{position:fixed; right:16px; bottom:16px; background:var(--panel); border:1px solid var(--border); padding:10px 12px; border-radius:10px; opacity:0; transform:translateY(10px); transition:.2s}
+    .toast.show{opacity:1; transform:translateY(0)}
+    .spinner { width:18px; height:18px; border:3px solid #ffffff66; border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; vertical-align:-3px; margin-right:8px }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
+
+  <!-- Sticky CTA Bar -->
+  <div class="sticky">
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo">PDF</div><span>Free PDF Tools</span>
+      </div>
+      <div class="cta">
+        <button class="sbtn" data-goto="merge" data-pick="mergeFiles">Merge</button>
+        <button class="sbtn alt" data-goto="split" data-pick="splitFile">Split</button>
+        <button class="sbtn alt" data-goto="compress" data-pick="compressFile">Compress</button>
+        <button class="sbtn alt" data-goto="images" data-pick="pdfToImgFile">PDF → Images</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <header>
-      <div class="logo">PDF</div>
+      <div class="logo-lg">PDF</div>
       <h1>Free PDF Merge, Split & Convert</h1>
     </header>
     <p class="sub">Fast, private, in-browser tools to merge, split, compress, and convert PDFs. No signup.</p>
+
+    <!-- Top Ad (responsive) -->
+    <div class="adwrap">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="YOUR-ADSENSE-CLIENT-ID"
+           data-ad-slot="YOUR-AD-SLOT-ID"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
 
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="merge">Merge</button>
@@ -121,11 +129,7 @@
         <div>
           <label class="drop" id="mergeDrop">
             <input type="file" id="mergeFiles" multiple accept="application/pdf">
-            <div>
-              <strong>Drop PDFs here</strong><br/>
-              or <button type="button" class="btn secondary" id="mergePick">Choose Files</button>
-              <div class="cta hint">Add 2 or more PDFs to combine</div>
-            </div>
+            <div><strong>Drop PDFs here</strong><br/>or <button type="button" class="btn secondary" id="mergePick">Choose Files</button><div class="hint">Add 2 or more PDFs to combine</div></div>
           </label>
         </div>
         <div>
@@ -134,10 +138,21 @@
             <button class="btn" id="mergeBtn">Merge & Download</button>
             <button class="btn secondary" id="mergeClear">Clear</button>
           </div>
-          <p class="hint tiny">Tip: Reorder by re-selecting in the sequence you want (drag-drop sorting coming next).</p>
+          <p class="hint tiny">Reorder by re-selecting in the sequence you want (drag-sort coming soon).</p>
         </div>
       </div>
     </section>
+
+    <!-- Mid-page Ad -->
+    <div class="adwrap">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="YOUR-ADSENSE-CLIENT-ID"
+           data-ad-slot="YOUR-AD-SLOT-ID"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
 
     <!-- SPLIT -->
     <section class="panel" data-panel="split" hidden>
@@ -145,18 +160,12 @@
         <div>
           <label class="drop" id="splitDrop">
             <input type="file" id="splitFile" accept="application/pdf">
-            <div>
-              <strong>Drop a PDF here</strong><br/>
-              or <button type="button" class="btn secondary" id="splitPick">Choose File</button>
-              <div class="cta hint">Example ranges: 1-3, 5-5, 7-10</div>
-            </div>
+            <div><strong>Drop a PDF here</strong><br/>or <button type="button" class="btn secondary" id="splitPick">Choose File</button><div class="hint">Examples: 1-3, 5-5, 7-10</div></div>
           </label>
         </div>
         <div>
           <ul class="files" id="splitList"></ul>
-          <div class="field">
-            <input type="text" id="pageRange" placeholder="Enter page range (e.g., 1-3)" />
-          </div>
+          <input type="text" id="pageRange" placeholder="Enter page range (e.g., 1-3)" />
           <div class="actions">
             <button class="btn" id="splitBtn">Split & Download</button>
             <button class="btn secondary" id="splitClear">Clear</button>
@@ -171,11 +180,7 @@
         <div>
           <label class="drop" id="compressDrop">
             <input type="file" id="compressFile" accept="application/pdf">
-            <div>
-              <strong>Drop a PDF here</strong><br/>
-              or <button type="button" class="btn secondary" id="compressPick">Choose File</button>
-              <div class="cta hint">Light, lossless compression (image recompress coming soon)</div>
-            </div>
+            <div><strong>Drop a PDF here</strong><br/>or <button type="button" class="btn secondary" id="compressPick">Choose File</button><div class="hint">Light, lossless compression (re-encoding coming later)</div></div>
           </label>
         </div>
         <div>
@@ -194,11 +199,7 @@
         <div>
           <label class="drop" id="imgDrop">
             <input type="file" id="pdfToImgFile" accept="application/pdf">
-            <div>
-              <strong>Drop a PDF here</strong><br/>
-              or <button type="button" class="btn secondary" id="imgPick">Choose File</button>
-              <div class="cta hint">Each page will download as a JPG image</div>
-            </div>
+            <div><strong>Drop a PDF here</strong><br/>or <button type="button" class="btn secondary" id="imgPick">Choose File</button><div class="hint">Each page downloads as a JPG</div></div>
           </label>
         </div>
         <div>
@@ -211,156 +212,109 @@
       </div>
     </section>
 
-    <footer>Made with ❤️ — files stay in your browser.</footer>
+    <footer>
+      <div class="tiny">Made with ❤️ — files stay in your browser. · <a href="privacy.html">Privacy</a></div>
+    </footer>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    // ---------- helpers ----------
-    const $ = s => document.querySelector(s);
-    const $$ = s => document.querySelectorAll(s);
-    const toast = (msg) => {
-      const el = $('#toast'); el.textContent = msg; el.classList.add('show');
-      setTimeout(()=> el.classList.remove('show'), 2200);
-    };
+    // Helpers
+    const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+    const toast = (m)=>{ const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); };
     const formatSize = b => (b/1024/1024).toFixed(2)+' MB';
-    const setBusy = (btn, busy=true, label) => {
-      if(busy){ btn.disabled = true; btn.dataset._label = btn.textContent; btn.innerHTML = `<span class="spinner"></span>${label||'Working...'}`; }
-      else { btn.disabled = false; btn.textContent = btn.dataset._label || 'Done'; }
-    };
-    const listFiles = (ul, files) => {
-      ul.innerHTML = '';
-      [...files].forEach(f=>{
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${f.name}</span><span class="pill">${formatSize(f.size)}</span>`;
-        ul.appendChild(li);
-      });
-    };
+    const setBusy = (btn, busy=true, label) => { if(busy){ btn.disabled=true; btn.dataset._label=btn.textContent; btn.innerHTML=`<span class="spinner"></span>${label||'Working…'}` } else { btn.disabled=false; btn.textContent=btn.dataset._label||'Done'; } };
+    const listFiles = (ul, files)=>{ ul.innerHTML=''; [...files].forEach(f=>{ const li=document.createElement('li'); li.innerHTML=`<span>${f.name}</span><span class="pill">${formatSize(f.size)}</span>`; ul.appendChild(li); }); };
     const hookDrop = (wrap, input, list) => {
       wrap.addEventListener('dragover', e=>{ e.preventDefault(); wrap.classList.add('drag'); });
       ['dragleave','drop'].forEach(ev => wrap.addEventListener(ev, _=>wrap.classList.remove('drag')));
-      wrap.addEventListener('drop', e=>{
-        e.preventDefault();
-        input.files = e.dataTransfer.files;
-        listFiles(list, input.files);
-      });
+      wrap.addEventListener('drop', e=>{ e.preventDefault(); input.files=e.dataTransfer.files; listFiles(list, input.files); });
     };
 
-    // ---------- tabs ----------
-    const tabs = $('#tabs');
-    tabs.addEventListener('click', (e)=>{
+    // Tabs
+    $('#tabs').addEventListener('click', e=>{
       if(!e.target.classList.contains('tab')) return;
-      $$('.tab').forEach(t=>t.classList.remove('active'));
-      e.target.classList.add('active');
-      const id = e.target.dataset.tab;
-      $$('section.panel').forEach(p=>p.hidden = p.dataset.panel !== id);
+      $$('.tab').forEach(t=>t.classList.remove('active')); e.target.classList.add('active');
+      const id = e.target.dataset.tab; $$('section.panel').forEach(p=>p.hidden = p.dataset.panel !== id);
     });
 
-    // ---------- MERGE ----------
-    const mergeDrop = $('#mergeDrop'), mergePick = $('#mergePick'), mergeInput = $('#mergeFiles'), mergeList = $('#mergeList');
-    hookDrop(mergeDrop, mergeInput, mergeList);
-    mergePick.onclick = ()=> mergeInput.click();
-    mergeInput.onchange = ()=> listFiles(mergeList, mergeInput.files);
-    $('#mergeClear').onclick = ()=>{ mergeInput.value=''; mergeList.innerHTML=''; };
-    $('#mergeBtn').onclick = async ()=>{
-      const files = mergeInput.files;
-      if(files.length < 2) return toast('Add at least two PDFs.');
-      const btn = $('#mergeBtn'); setBusy(btn,true,'Merging…');
+    // Sticky quick actions
+    document.querySelector('.sticky').addEventListener('click', (e)=>{
+      const btn = e.target.closest('[data-goto]'); if(!btn) return;
+      const tab = btn.dataset.goto, pick = btn.dataset.pick;
+      const targetTab = [...$$('.tab')].find(t=>t.dataset.tab===tab);
+      targetTab?.click();
+      if (pick) setTimeout(()=> document.getElementById(pick)?.click(), 50);
+    });
+
+    // Merge
+    const mergeDrop=$('#mergeDrop'), mergePick=$('#mergePick'), mergeInput=$('#mergeFiles'), mergeList=$('#mergeList');
+    hookDrop(mergeDrop, mergeInput, mergeList); mergePick.onclick=()=>mergeInput.click(); mergeInput.onchange=()=>listFiles(mergeList, mergeInput.files);
+    $('#mergeClear').onclick=()=>{ mergeInput.value=''; mergeList.innerHTML=''; };
+    $('#mergeBtn').onclick=async ()=>{
+      const files=mergeInput.files; if(files.length<2) return toast('Add at least two PDFs.');
+      const btn=$('#mergeBtn'); setBusy(btn,true,'Merging…');
       try{
-        const merged = await PDFLib.PDFDocument.create();
-        for (const file of files){
-          const buf = await file.arrayBuffer();
-          const src = await PDFLib.PDFDocument.load(buf);
-          const pages = await merged.copyPages(src, src.getPageIndices());
-          pages.forEach(p=>merged.addPage(p));
-        }
-        const bytes = await merged.save();
-        const blob = new Blob([bytes], {type:'application/pdf'});
-        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: 'merged.pdf'});
-        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        const merged=await PDFLib.PDFDocument.create();
+        for (const f of files){ const ab=await f.arrayBuffer(); const src=await PDFLib.PDFDocument.load(ab); const pages=await merged.copyPages(src, src.getPageIndices()); pages.forEach(p=>merged.addPage(p)); }
+        const bytes=await merged.save(); const blob=new Blob([bytes],{type:'application/pdf'}); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'merged.pdf'}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
         toast('Merged PDF downloaded.');
-      }catch(err){ console.error(err); toast('Merge failed.'); }
-      finally{ setBusy(btn,false); }
+      }catch(e){ console.error(e); toast('Merge failed.'); } finally{ setBusy(btn,false); }
     };
 
-    // ---------- SPLIT ----------
-    const splitDrop = $('#splitDrop'), splitPick = $('#splitPick'), splitInput = $('#splitFile'), splitList = $('#splitList');
-    hookDrop(splitDrop, splitInput, splitList);
-    splitPick.onclick = ()=> splitInput.click();
-    splitInput.onchange = ()=> listFiles(splitList, splitInput.files);
-    $('#splitClear').onclick = ()=>{ splitInput.value=''; splitList.innerHTML=''; $('#pageRange').value=''; };
-    $('#splitBtn').onclick = async ()=>{
-      const file = splitInput.files[0]; const range = $('#pageRange').value.trim();
-      if(!file) return toast('Choose a PDF.');
-      if(!/^\d+\s*-\s*\d+$/.test(range)) return toast('Enter a valid range like 1-3.');
-      const btn = $('#splitBtn'); setBusy(btn,true,'Splitting…');
+    // Split
+    const splitDrop=$('#splitDrop'), splitPick=$('#splitPick'), splitInput=$('#splitFile'), splitList=$('#splitList');
+    hookDrop(splitDrop, splitInput, splitList); splitPick.onclick=()=>splitInput.click(); splitInput.onchange=()=>listFiles(splitList, splitInput.files);
+    $('#splitClear').onclick=()=>{ splitInput.value=''; splitList.innerHTML=''; $('#pageRange').value=''; };
+    $('#splitBtn').onclick=async ()=>{
+      const file=splitInput.files[0]; const range=$('#pageRange').value.trim();
+      if(!file) return toast('Choose a PDF.'); if(!/^\d+\s*-\s*\d+$/.test(range)) return toast('Enter a valid range like 1-3.');
+      const btn=$('#splitBtn'); setBusy(btn,true,'Splitting…');
       try{
-        const [s,e] = range.split('-').map(n=>parseInt(n.trim(),10)-1);
-        const buf = await file.arrayBuffer();
-        const src = await PDFLib.PDFDocument.load(buf);
-        if(s<0 || e>=src.getPageCount() || s>e) throw new Error('range');
-        const out = await PDFLib.PDFDocument.create();
-        const pages = await out.copyPages(src, Array.from({length: e-s+1}, (_,i)=> s+i));
-        pages.forEach(p=>out.addPage(p));
-        const bytes = await out.save();
-        const blob = new Blob([bytes], {type:'application/pdf'});
-        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `split-${s+1}-${e+1}.pdf`});
-        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        const [s,e]=range.split('-').map(n=>parseInt(n.trim(),10)-1);
+        const ab=await file.arrayBuffer(); const src=await PDFLib.PDFDocument.load(ab);
+        if(s<0||e>=src.getPageCount()||s>e) throw new Error('range');
+        const out=await PDFLib.PDFDocument.create(); const pages=await out.copyPages(src, Array.from({length:e-s+1},(_,i)=>s+i)); pages.forEach(p=>out.addPage(p));
+        const bytes=await out.save(); const blob=new Blob([bytes],{type:'application/pdf'}); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`split-${s+1}-${e+1}.pdf`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
         toast('Split PDF downloaded.');
-      }catch(err){ console.error(err); toast('Split failed.'); }
-      finally{ setBusy(btn,false); }
+      }catch(e){ console.error(e); toast('Split failed.'); } finally{ setBusy(btn,false); }
     };
 
-    // ---------- COMPRESS (lossless-ish re-save) ----------
-    const compressDrop = $('#compressDrop'), compressPick = $('#compressPick'), compressInput = $('#compressFile'), compressList = $('#compressList');
-    hookDrop(compressDrop, compressInput, compressList);
-    compressPick.onclick = ()=> compressInput.click();
-    compressInput.onchange = ()=> listFiles(compressList, compressInput.files);
-    $('#compressClear').onclick = ()=>{ compressInput.value=''; compressList.innerHTML=''; };
-    $('#compressBtn').onclick = async ()=>{
-      const file = compressInput.files[0]; if(!file) return toast('Choose a PDF.');
-      const btn = $('#compressBtn'); setBusy(btn,true,'Compressing…');
+    // Compress
+    const compressDrop=$('#compressDrop'), compressPick=$('#compressPick'), compressInput=$('#compressFile'), compressList=$('#compressList');
+    hookDrop(compressDrop, compressInput, compressList); compressPick.onclick=()=>compressInput.click(); compressInput.onchange=()=>listFiles(compressList, compressInput.files);
+    $('#compressClear').onclick=()=>{ compressInput.value=''; compressList.innerHTML=''; };
+    $('#compressBtn').onclick=async ()=>{
+      const file=compressInput.files[0]; if(!file) return toast('Choose a PDF.');
+      const btn=$('#compressBtn'); setBusy(btn,true,'Compressing…');
       try{
-        const buf = await file.arrayBuffer();
-        const pdf = await PDFLib.PDFDocument.load(buf);
-        const bytes = await pdf.save({ useObjectStreams:true }); // light structural compression
-        const blob = new Blob([bytes], {type:'application/pdf'});
-        const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(blob), download: `compressed-${file.name}`});
-        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+        const ab=await file.arrayBuffer(); const pdf=await PDFLib.PDFDocument.load(ab);
+        const bytes=await pdf.save({useObjectStreams:true}); // light structural compression
+        const blob=new Blob([bytes],{type:'application/pdf'}); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`compressed-${file.name}`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
         toast('Compressed PDF downloaded.');
-      }catch(err){ console.error(err); toast('Compression failed.'); }
-      finally{ setBusy(btn,false); }
+      }catch(e){ console.error(e); toast('Compression failed.'); } finally{ setBusy(btn,false); }
     };
 
-    // ---------- PDF → IMAGES ----------
-    const imgDrop = $('#imgDrop'), imgPick = $('#imgPick'), imgInput = $('#pdfToImgFile'), imgList = $('#imgList');
-    hookDrop(imgDrop, imgInput, imgList);
-    imgPick.onclick = ()=> imgInput.click();
-    imgInput.onchange = ()=> listFiles(imgList, imgInput.files);
-    $('#imgClear').onclick = ()=>{ imgInput.value=''; imgList.innerHTML=''; };
-    $('#imgBtn').onclick = async ()=>{
-      const file = imgInput.files[0]; if(!file) return toast('Choose a PDF.');
-      const btn = $('#imgBtn'); setBusy(btn,true,'Converting…');
+    // PDF -> Images
+    const imgDrop=$('#imgDrop'), imgPick=$('#imgPick'), imgInput=$('#pdfToImgFile'), imgList=$('#imgList');
+    hookDrop(imgDrop, imgInput, imgList); imgPick.onclick=()=>imgInput.click(); imgInput.onchange=()=>listFiles(imgList, imgInput.files);
+    $('#imgClear').onclick=()=>{ imgInput.value=''; imgList.innerHTML=''; };
+    $('#imgBtn').onclick=async ()=>{
+      const file=imgInput.files[0]; if(!file) return toast('Choose a PDF.');
+      const btn=$('#imgBtn'); setBusy(btn,true,'Converting…');
       try{
-        const buf = await file.arrayBuffer();
-        const typed = new Uint8Array(buf);
-        const loadingTask = pdfjsLib.getDocument(typed);
-        const pdf = await loadingTask.promise;
+        const ab=await file.arrayBuffer(); const typed=new Uint8Array(ab);
+        const pdf=await pdfjsLib.getDocument(typed).promise;
         for(let i=1;i<=pdf.numPages;i++){
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({scale:2});
-          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-          canvas.width = viewport.width; canvas.height = viewport.height;
+          const page=await pdf.getPage(i); const viewport=page.getViewport({scale:2});
+          const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+          canvas.width=viewport.width; canvas.height=viewport.height;
           await page.render({canvasContext:ctx, viewport}).promise;
-          await new Promise(res=>canvas.toBlob(b=>{
-            const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(b), download:`page-${i}.jpg`});
-            document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove(); res();
-          }, 'image/jpeg', 0.92));
+          await new Promise(res=>canvas.toBlob(b=>{ const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`page-${i}.jpg`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove(); res(); },'image/jpeg',0.92));
         }
         toast('Images downloaded.');
-      }catch(err){ console.error(err); toast('Conversion failed.'); }
-      finally{ setBusy(btn,false); }
+      }catch(e){ console.error(e); toast('Conversion failed.'); } finally{ setBusy(btn,false); }
     };
   </script>
 </body>
