@@ -8,46 +8,61 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
 
-<!-- Core libs (order matters) -->
+<!-- Core libs -->
 <script defer src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <style>
-:root{--bg:#0b0f14;--panel:#111825;--ink:#eaf2ff;--muted:#9bb3d1;--brand:#3b82f6;--border:#1e293b}
+:root{--bg:#0b0f14;--panel:#111825;--ink:#eaf2ff;--muted:#9bb3d1;--brand:#3b82f6;--brand2:#22d3ee;--border:#1e293b}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--ink);background:var(--bg);padding-top:72px}
+/* Header */
 .sticky{position:fixed;inset:0 0 auto 0;z-index:30;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
 .sticky .wrap{max-width:980px;margin:0 auto;padding:10px 12px;display:flex;gap:8px;align-items:center;justify-content:space-between}
-.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#22d3ee);display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px}
+.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px}
 .sbtn{background:var(--brand);color:#fff;border:0;padding:8px 10px;border-radius:10px;font-weight:700;cursor:pointer}
 .sbtn.alt{background:#111827;color:#e5e7eb;border:1px solid var(--border)}
+/* Layout */
 .container{max-width:980px;margin:28px auto;padding:16px}
 header{display:flex;align-items:center;gap:14px;justify-content:center}
-.logo-lg{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#22d3ee);display:grid;place-items:center;color:#fff;font-weight:800}
+.logo-lg{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-weight:800}
 .sub{color:var(--muted);text-align:center;margin:6px 0 12px}
+/* Tabs */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px auto 12px;justify-content:center}
-.tab{border:1px solid var(--border);background:#121a2a;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
-.tab.active{background:var(--brand);color:#fff}
+.tab{
+  border:1px solid var(--border);
+  background:#121a2a;
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+  color:#ffffff !important; /* always white */
+}
+.tab.active{background:var(--brand);color:#ffffff !important}
+/* Panels & grid */
 .panel{background:#0f172a;border:1px solid var(--border);border-radius:18px;padding:18px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media (max-width:820px){.grid{grid-template-columns:1fr}}
+/* Upload areas */
 .drop{border:2px dashed var(--border);border-radius:14px;padding:22px;display:grid;place-items:center;text-align:center;min-height:160px}
 .drop.drag{border-color:var(--brand);background:linear-gradient(180deg,#3b82f60e,#0000)}
 .drop input{display:none}
 .btn{background:var(--brand);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
 .btn.secondary{background:#111827;color:#e5e7eb;border:1px solid var(--border)}
 .actions{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+/* Lists */
 ul.files{list-style:none;margin:12px 0 0;padding:0;max-height:260px;overflow:auto}
 ul.files li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px dashed var(--border);border-radius:10px;margin-bottom:8px;font-size:14px;background:#0f172a22}
 .pill{font-size:12px;color:#cbd5e1;padding:2px 8px;border-radius:999px;background:#0f172a;border:1px solid var(--border)}
+/* Progress + toast */
 .progress{height:10px;width:100%;background:#0f172a44;border-radius:999px;overflow:hidden;border:1px solid var(--border);margin-top:10px}
-.progress>div{height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#22d3ee);transition:width .2s}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .2s}
 .toast{position:fixed;right:16px;bottom:16px;background:#0f172a;border:1px solid var(--border);padding:10px 12px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.2s}
 .toast.show{opacity:1;transform:translateY(0)}
-/* never let ads block clicks */
+/* click safety for any ads */
 .adwrap,.adsbygoogle{pointer-events:none}
 </style>
 </head>
@@ -153,16 +168,18 @@ ul.files li{display:flex;align-items:center;justify-content:space-between;gap:10
       </div>
       <div>
         <ul class="files" id="imgList"></ul>
-        <label>Format:
-          <select id="imgFormat">
-            <option value="image/jpeg" selected>JPG</option>
-            <option value="image/png">PNG</option>
-          </select>
-        </label>
-        <label id="jpgQWrap">JPG quality:
-          <input type="range" id="jpgQuality" min="60" max="100" step="1" value="92">
-          <span id="jpgQLabel">92%</span>
-        </label>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <label>Format:
+            <select id="imgFormat">
+              <option value="image/jpeg" selected>JPG</option>
+              <option value="image/png">PNG</option>
+            </select>
+          </label>
+          <label id="jpgQWrap">JPG quality:
+            <input type="range" id="jpgQuality" min="60" max="100" step="1" value="92">
+            <span class="pill" id="jpgQLabel">92%</span>
+          </label>
+        </div>
         <div class="actions">
           <button class="btn" id="imgBtn">Convert & Download Individually</button>
           <button class="btn secondary" id="imgZipBtn">Convert & Download ZIP</button>
@@ -177,20 +194,16 @@ ul.files li{display:flex;align-items:center;justify-content:space-between;gap:10
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  // Guard: make sure libs loaded
-  if (!window.PDFLib || !window.pdfjsLib || !window.JSZip) {
-    alert('One or more libraries failed to load. Check network or CSP.');
-    return;
-  }
-  // pdf.js worker (already included via script, but keep explicit)
-  try { pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js";
-  } catch(_) {}
+  // Guard libs
+  if (!window.PDFLib || !window.pdfjsLib || !window.JSZip) { alert('Libraries failed to load.'); return; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js";
 
-  const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+  // Utils
+  const $  = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
   const toast = m => { const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1800); };
   const setBusy = (btn, busy=true, label) => { if(busy){ btn.disabled=true; btn.dataset._label=btn.textContent; btn.innerHTML='<span>⏳</span> '+(label||'Working…'); } else { btn.disabled=false; btn.textContent=btn.dataset._label||'Done'; } };
   const setProgress = (el,p)=>{ if(!el)return; if(p==null){ el.hidden=true; el.firstElementChild.style.width='0%'; } else { el.hidden=false; el.firstElementChild.style.width=p+'%'; } };
+  const formatSize = b => (b/1024/1024).toFixed(2)+' MB';
 
   // Tabs
   $('#tabs').addEventListener('click', e=>{
@@ -200,17 +213,16 @@ window.addEventListener('DOMContentLoaded', () => {
     $$('section.panel').forEach(p=> p.hidden = p.id !== id);
     history.replaceState(null,'','#'+id);
   });
-  // Quick actions in sticky
+  // Quick actions in header
   document.querySelector('.sticky').addEventListener('click', e=>{
     const b = e.target.closest('[data-goto]'); if(!b) return;
     const t = document.querySelector(`.tab[data-tab="${b.dataset.goto}"]`);
     t?.click(); const pick = b.dataset.pick && document.getElementById(b.dataset.pick); pick?.click();
   });
-  // Load from hash
+  // Load from hash (deep link)
   const hash = location.hash.replace('#',''); if (hash) document.querySelector(`.tab[data-tab="${hash}"]`)?.click();
 
-  // Helpers
-  const formatSize = b => (b/1024/1024).toFixed(2)+' MB';
+  // Common helpers
   const renderThumbTo = async (canvas, file) => {
     try{
       const buf = await file.arrayBuffer();
@@ -222,7 +234,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }catch(_){}
   };
   const listFiles = (ul, files)=>{ ul.innerHTML=''; [...files].forEach(f=>{ const li=document.createElement('li'); li.innerHTML=`<div>${f.name}</div><span class="pill">${formatSize(f.size)}</span>`; ul.appendChild(li); }); };
-
   const hookDrop = (wrap, input, onFiles) => {
     wrap.addEventListener('dragover', e=>{ e.preventDefault(); wrap.classList.add('drag'); });
     ['dragleave','drop'].forEach(ev => wrap.addEventListener(ev, _=>wrap.classList.remove('drag')));
@@ -230,9 +241,9 @@ window.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('change', ()=> onFiles(input.files));
   };
 
-  // MERGE
-  const mergeDrop=$('#mergeDrop'), mergePick=$('#mergePick'), mergeInput=$('#mergeFiles'), mergeList=$('#mergeList');
+  /* ===== MERGE ===== */
   let mergeFilesArr=[];
+  const mergeDrop=$('#mergeDrop'), mergePick=$('#mergePick'), mergeInput=$('#mergeFiles'), mergeList=$('#mergeList');
   const refreshMergeList=()=>{ mergeList.innerHTML=''; mergeFilesArr.forEach(f=>{ const li=document.createElement('li'); li.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><canvas width="40" height="52"></canvas><span>${f.name}</span></div><span class="pill">${formatSize(f.size)}</span>`; mergeList.appendChild(li); renderThumbTo(li.querySelector('canvas'),f); }); };
   mergePick.onclick=()=>mergeInput.click();
   hookDrop(mergeDrop, mergeInput, files=>{ mergeFilesArr=[...files]; refreshMergeList(); });
@@ -252,33 +263,38 @@ window.addEventListener('DOMContentLoaded', () => {
       const bytes=await merged.save(); setProgress(prog,98);
       const blob=new Blob([bytes],{type:'application/pdf'});
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'merged.pdf'}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
-      setProgress(prog,null); toast('Merged PDF downloaded.');
-    }catch(e){ console.error(e); toast('Merge failed.'); setProgress($('#mergeProg'),null); }
-    finally{ setBusy(btn,false); }
+      toast('Merged PDF downloaded.');
+    }catch(e){ console.error(e); toast('Merge failed.'); }
+    finally{ setBusy(btn,false); setProgress(prog,null); }
   };
 
-  // SPLIT
+  /* ===== SPLIT ===== */
   const splitDrop=$('#splitDrop'), splitPick=$('#splitPick'), splitInput=$('#splitFile'), splitList=$('#splitList');
   splitPick.onclick=()=>splitInput.click();
   hookDrop(splitDrop, splitInput, files=>{ splitInput.files=files; listFiles(splitList, files); });
   $('#splitClear').onclick=()=>{ splitInput.value=''; splitList.innerHTML=''; $('#pageRange').value=''; };
   $('#splitBtn').onclick=async ()=>{
     const file=splitInput.files?.[0]; const range=$('#pageRange').value.trim();
-    if(!file) return toast('Choose a PDF.'); if(!/^\d+\s*-\s*\d+$/.test(range)) return toast('Enter a valid range like 1-3.');
+    if(!file) return toast('Choose a PDF.');
+    if(!/^\d+\s*-\s*\d+$/.test(range)) return toast('Enter a valid range like 1-3.');
     const btn=$('#splitBtn'); setBusy(btn,true,'Splitting…'); const prog=$('#splitProg'); setProgress(prog,10);
     try{
-      const [s,e]=range.split('-').map(n=>parseInt(n.trim(),10)-1);
+      const [start,end]=range.split('-').map(n=>parseInt(n.trim(),10)-1);
       const ab=await file.arrayBuffer(); const src=await PDFLib.PDFDocument.load(ab);
-      if(s<0||e>=src.getPageCount()||s>e) throw new Error('range');
-      const out=await PDFLib.PDFDocument.create(); const pages=await out.copyPages(src, Array.from({length:e-s+1},(_,i)=>s+i)); pages.forEach(p=>out.addPage(p));
-      const bytes=await out.save(); setProgress(prog,95);
-      const blob=new Blob([bytes],{type:'application/pdf'}); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`split-${s+1}-${e+1}.pdf`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
-      setProgress(prog,null); toast('Split PDF downloaded.');
-    }catch(e){ console.error(e); toast('Split failed.'); setProgress($('#splitProg'),null); }
-    finally{ setBusy(btn,false); }
+      const total=src.getPageCount(); if(start<0||end>=total||start>end) throw new Error('Invalid range');
+      const out=await PDFLib.PDFDocument.create();
+      const pages=await out.copyPages(src, Array.from({length:end-start+1},(_,i)=>start+i));
+      pages.forEach(p=>out.addPage(p));
+      const bytes=await out.save();
+      const blob=new Blob([bytes],{type:'application/pdf'});
+      const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`split_${range.replace(/\s+/g,'')}.pdf`});
+      document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+      toast('Split PDF downloaded.');
+    }catch(e){ console.error(e); toast('Split failed.'); }
+    finally{ setBusy(btn,false); setProgress(prog,null); }
   };
 
-  // COMPRESS
+  /* ===== COMPRESS ===== */
   const compressDrop=$('#compressDrop'), compressPick=$('#compressPick'), compressInput=$('#compressFile'), compressList=$('#compressList');
   compressPick.onclick=()=>compressInput.click();
   hookDrop(compressDrop, compressInput, files=>{ compressInput.files=files; listFiles(compressList, files); });
@@ -287,19 +303,24 @@ window.addEventListener('DOMContentLoaded', () => {
     const file=compressInput.files?.[0]; if(!file) return toast('Choose a PDF.');
     const btn=$('#compressBtn'); setBusy(btn,true,'Compressing…'); const prog=$('#compressProg'); setProgress(prog,20);
     try{
-      const ab=await file.arrayBuffer(); const pdf=await PDFLib.PDFDocument.load(ab);
-      const bytes=await pdf.save({useObjectStreams:true}); setProgress(prog,95);
-      const blob=new Blob([bytes],{type:'application/pdf'}); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`compressed-${file.name}`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
-      setProgress(prog,null); toast('Compressed PDF downloaded.');
-    }catch(e){ console.error(e); toast('Compression failed.'); setProgress($('#compressProg'),null); }
-    finally{ setBusy(btn,false); }
+      const ab=await file.arrayBuffer();
+      const pdf=await PDFLib.PDFDocument.load(ab);
+      // Light lossless-ish recompress (object streams)
+      const bytes=await pdf.save({useObjectStreams:true});
+      const blob=new Blob([bytes],{type:'application/pdf'});
+      const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`compressed-${file.name.replace(/\s+/g,'_')}`});
+      document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+      toast('Compressed PDF downloaded.');
+    }catch(e){ console.error(e); toast('Compression failed.'); }
+    finally{ setBusy(btn,false); setProgress(prog,null); }
   };
 
-  // PDF → IMAGES
+  /* ===== PDF → IMAGES ===== */
   const imgDrop=$('#imgDrop'), imgPick=$('#imgPick'), imgInput=$('#pdfToImgFile'), imgList=$('#imgList');
   const fmtSel=$('#imgFormat'), jpgQ=$('#jpgQuality'), jpgQLabel=$('#jpgQLabel'), jpgQWrap=$('#jpgQWrap');
-  fmtSel.addEventListener('change', ()=>{ const jpg=fmtSel.value==='image/jpeg'; jpgQWrap.style.display=jpg?'inline-block':'none'; }); fmtSel.dispatchEvent(new Event('change'));
-  jpgQ.addEventListener('input', ()=> jpgQLabel.textContent = jpgQ.value+'%');
+  const updateQ = ()=>{ const jpg=fmtSel.value==='image/jpeg'; if(jpgQWrap) jpgQWrap.style.display=jpg?'inline-block':'none'; if(jpg) jpgQLabel.textContent = (jpgQ.value||'92')+'%'; };
+  if(fmtSel){ fmtSel.addEventListener('change', updateQ); updateQ(); }
+  if(jpgQ){ jpgQ.addEventListener('input', ()=> jpgQLabel.textContent = jpgQ.value+'%'); }
   imgPick.onclick=()=>imgInput.click();
   hookDrop(imgDrop, imgInput, files=>{ imgInput.files=files; listFiles(imgList, files); });
   $('#imgClear').onclick=()=>{ imgInput.value=''; imgList.innerHTML=''; };
@@ -311,21 +332,26 @@ window.addEventListener('DOMContentLoaded', () => {
       const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
       canvas.width=viewport.width; canvas.height=viewport.height;
       await page.render({canvasContext:ctx, viewport}).promise;
-      const mime=fmtSel.value; const q=mime==='image/jpeg'?Number(jpgQ.value)/100:undefined;
-      const blob=await new Promise(res=>canvas.toBlob(b=>res(b), mime, q));
-      await onPageBlob(i, blob); onProgress?.(Math.round((i/pdf.numPages)*100));
+      const mime=fmtSel.value; const q=mime==='image/jpeg'?Number(jpgQ.value||92)/100:undefined;
+      const blob = await new Promise(res=>canvas.toBlob(b=>res(b), mime, q));
+      await onPageBlob(i, blob);
+      onProgress?.(Math.round((i/pdf.numPages)*100));
     }
-    return pdf.numPages;
+    return true;
   }
 
   $('#imgBtn').onclick=async ()=>{
     const file=imgInput.files?.[0]; if(!file) return toast('Choose a PDF.');
     const btn=$('#imgBtn'); setBusy(btn,true,'Converting…'); const prog=$('#imgProg'); setProgress(prog,1);
     try{
-      await pdfToImages(file, async(i,blob)=>{ const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`page-${i}.${fmtSel.value==='image/png'?'png':'jpg'}`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove(); }, p=>setProgress(prog,p));
-      setProgress(prog,null); toast('Images downloaded.');
-    }catch(e){ console.error(e); toast('Conversion failed.'); setProgress($('#imgProg'),null); }
-    finally{ setBusy(btn,false); }
+      await pdfToImages(file, async(i,blob)=>{
+        const ext = (fmtSel.value==='image/png'?'png':'jpg');
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`page-${i}.${ext}`});
+        document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+      }, p=>setProgress(prog,p));
+      toast('Images downloaded.');
+    }catch(e){ console.error(e); toast('Conversion failed.'); }
+    finally{ setBusy(btn,false); setProgress(prog,null); }
   };
 
   $('#imgZipBtn').onclick=async ()=>{
@@ -333,16 +359,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const btn=$('#imgZipBtn'); setBusy(btn,true,'Zipping…'); const prog=$('#imgProg'); setProgress(prog,1);
     try{
       const zip=new JSZip();
-      const pages=await pdfToImages(file, async(i,blob)=>{ zip.file(`page-${i}.${fmtSel.value==='image/png'?'png':'jpg'}`, blob); }, p=>setProgress(prog,p));
+      const ext = (fmtSel.value==='image/png'?'png':'jpg');
+      await pdfToImages(file, async(i,blob)=>{ zip.file(`page-${i}.${ext}`, blob); }, p=>setProgress(prog,p));
       const zipBlob=await zip.generateAsync({type:'blob'});
-      const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(zipBlob),download:`${file.name.replace(/\.pdf$/i,'')||'images'}.zip`}); document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
-      setProgress(prog,null); toast(`${pages} page(s) zipped & downloaded.`);
-    }catch(e){ console.error(e); toast('ZIP failed.'); setProgress($('#imgProg'),null); }
-    finally{ setBusy(btn,false); }
+      const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(zipBlob),download:`${file.name.replace(/\.pdf$/i,'')||'images'}.zip`});
+      document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove();
+      toast('ZIP downloaded.');
+    }catch(e){ console.error(e); toast('ZIP failed.'); }
+    finally{ setBusy(btn,false); setProgress(prog,null); }
   };
 });
 </script>
 </body>
 </html>
-
 
